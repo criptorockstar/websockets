@@ -75,7 +75,7 @@ router.post(
       await player.save();
 
       // Eliminar la contraseña antes de enviar la respuesta
-      const { password: hashedPassword, id, __v, ...data } = user.toJSON();
+      const { password: hashedPassword, __v, ...data } = user.toJSON();
       res.status(201).json(data);
     } catch (error) {
       return res.status(500).json({ message: error.message });
@@ -128,12 +128,10 @@ router.post(
 
       res.cookie("jwt", token, {
         httpOnly: true,
-        sameSite: "Strict",
         maxAge: 24 * 60 * 60 * 1000,
-        secure: process.env.NODE_ENV === "production",
       });
 
-      const { password: hashedPassword, id, __v, ...data } = user.toJSON();
+      const { password: hashedPassword, __v, ...data } = user.toJSON();
 
       res.status(200).json(data);
     } catch (error) {
@@ -156,28 +154,6 @@ router.get("/verify", (req, res) => {
 
     res.status(200).json({ message: "Token is valid", userId: decoded.id });
   });
-});
-
-router.post("/logout", (req, res) => {
-  try {
-    const token = req.cookies["jwt"];
-    if (!token) {
-      return res.status(400).json({ message: "No token found" });
-    }
-
-    // Limpiar la cookie
-    res.clearCookie("jwt", {
-      httpOnly: true,
-      sameSite: "Strict",
-      secure: process.env.NODE_ENV === "production",
-    });
-
-    res.status(200).json({ message: "Sesión cerrada" });
-  } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Error al cerrar sesión", error: error.message });
-  }
 });
 
 export default router;

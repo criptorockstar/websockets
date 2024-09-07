@@ -86,7 +86,6 @@ export default function SignIn() {
           "email": result.email,
         }
         dispatch(setUserState(payload));
-
         router.push("/");
       }
     } catch (error) {
