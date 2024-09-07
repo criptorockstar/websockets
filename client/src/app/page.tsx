@@ -23,6 +23,7 @@ import {
   FormItem,
   FormMessage,
 } from "@/components/ui/form"
+import { useAppSelector, RootState } from "@/store/store";
 
 const socket = io("http://localhost:3001");
 
@@ -32,6 +33,9 @@ const FormSchema = z.object({
 })
 
 export default function Home() {
+  const user = useAppSelector((state: RootState) => state.user);
+  console.log(user)
+
   // message state
   const [message, setMessage] = React.useState("");
   const [messageReceived, setMessageReceived] = React.useState("");
@@ -40,16 +44,16 @@ export default function Home() {
   const [room, setRoom] = React.useState("");
 
   const sendMessage = () => {
-    socket.emit("send_message", { message, room })
+    socket.emit("send_challenger", { message, room })
   };
 
   React.useEffect(() => {
-    socket.on("receive_message", (data) => {
+    socket.on("received_challenger", (data) => {
       setMessageReceived(data.message)
     });
 
     return () => {
-      socket.off("receive_message");
+      socket.off("received_challenger");
     };
   }, []);
 
@@ -64,7 +68,7 @@ export default function Home() {
     const room = data.mode;
     setRoom(room);
     if (room) {
-      socket.emit("join_room", room);
+      socket.emit("join_queue", room);
     }
     console.log(room);
   }
