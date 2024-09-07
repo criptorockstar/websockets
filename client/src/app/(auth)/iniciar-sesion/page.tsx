@@ -104,7 +104,7 @@ export default function SignIn() {
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
-                    <Input placeholder="Correo electrónico" {...field} />
+                    <Input placeholder="Correo electrónico" autoComplete="off" {...field} />
                   </FormControl>
                   <FormMessage error={formState.errors.email} />
                 </FormItem>

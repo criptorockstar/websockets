@@ -1,3 +1,5 @@
+let arr = [];
+let playingArray = [];
 export default function setupSocket(io) {
   io.on("connection", (socket) => {
     console.log(`user connected: ${socket.id}`);
