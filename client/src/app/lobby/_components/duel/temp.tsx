@@ -31,19 +31,19 @@ const FormSchema = z.object({
     .string()
 })
 
-export default function Home() {
+export default function DuelModal() {
   const user = useAppSelector((state: RootState) => state.user);
-
-  // message state
-  const [message, setMessage] = React.useState<any>(null);
-  const [messageReceived, setMessageReceived] = React.useState("");
 
   // room state
   const [room, setRoom] = React.useState("");
 
-
   React.useEffect(() => {
+    socket.on("exited", () => {
+      console.log("exited")
+    });
+
     return () => {
+      socket.off("exited");
     };
   }, []);
 
@@ -56,7 +56,6 @@ export default function Home() {
 
   function onSubmit(data: z.infer<typeof FormSchema>) {
     const room = data.mode;
-    setRoom(room);
 
     const userdata = {
       "id": user.id,
@@ -68,14 +67,14 @@ export default function Home() {
     if (room) {
       socket.emit("join_queue", { room, userdata });
     }
-    console.log(room, userdata);
   }
 
   const onCancel = async () => {
     const userdata = {
       "id": user.id,
       "username": user.username,
-      "email": user.email
+      "avatar": user.avatar,
+      "bet": 10,
     }
 
     if (room) {
@@ -119,10 +118,6 @@ export default function Home() {
             </form>
           </Form>
         </div>
-      </div>
-
-      <div>
-        message: {messageReceived}
       </div>
     </React.Fragment>
   );

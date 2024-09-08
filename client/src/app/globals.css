@@ -14,10 +14,88 @@
   }
 }
 
+.bg-table {
+  background-image: url("/table.png");
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: center;
+}
+
+.bg-tablev {
+  background-image: url("/tablev.png");
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: center;
+}
+
+.bg-diablo {
+  background-image: url("/diablo.png");
+  background-repeat: no-repeat;
+  mix-blend-mode: soft-light;
+}
+
+.bg-goat {
+  position: absolute;
+  inset: 0;
+  background-image: url("/goat.svg");
+  background-position: center;
+  background-size: 400px 400px;
+  background-repeat: no-repeat;
+  mix-blend-mode: soft-light;
+  z-index: -1;
+}
+
+.animate-blink {
+  animation: blink 1.5s infinite;
+}
+
+.vs-transition {
+  animation: fadeIn 5s ease-in-out;
+}
+
+.oponent-transition {
+  animation: fadeIn 3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes gradient {
+  0% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.gradient-text {
+  background: linear-gradient(90deg, red, yellow, green, yellow, red);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradient 3s linear infinite;
+}
+
 body {
-  color: var(--foreground);
-  background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
+  background-image: url(/bg.jpg);
+  background-position: center;
+  background-size: cover;
+  background-attachment: fixed;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
 }
 
 @layer utilities {

@@ -1,3 +1,6 @@
+import User from "../models/user.model.js";
+import Player from "../models/player.model.js";
+
 let arr1vs1 = [];
 let playerStatus = {};
 
@@ -15,7 +18,7 @@ export default function setupSocket(io) {
       playerStatus[socket.id] = "left";
     });
 
-    socket.on("join_queue", (data) => {
+    socket.on("join_queue", async (data) => {
       if (playerStatus[socket.id] === "left") {
         playerStatus[socket.id] = "active";
 
@@ -35,7 +38,8 @@ export default function setupSocket(io) {
         const challenger = {
           id: socket.id,
           username: data.userdata.username,
-          email: data.userdata.email,
+          avatar: data.userdata.avatar,
+          bet: data.userdata.bet,
           room: data.room,
           socketId: socket.id,
         };
