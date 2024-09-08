@@ -1,5 +1,9 @@
+import mongoose from "mongoose";
 import User from "../models/user.model.js";
 import Player from "../models/player.model.js";
+import Level from "../models/level.model.js";
+import Game from "../models/game.model.js";
+import GamePlayer from "../models/gamePlayer.model.js";
 
 let arr1vs1 = [];
 let playerStatus = {};
@@ -21,13 +25,11 @@ export default function setupSocket(io) {
     socket.on("join_queue", async (data) => {
       if (playerStatus[socket.id] === "left") {
         playerStatus[socket.id] = "active";
-
         return;
       }
 
       socket.join(data.room);
 
-      // store in hashmap
       const alreadyInQueue = arr1vs1.some(
         (player) => player.socketId === socket.id,
       );
@@ -35,26 +37,54 @@ export default function setupSocket(io) {
       if (!alreadyInQueue) {
         socket.join(data.room);
 
-        const challenger = {
-          id: socket.id,
-          username: data.userdata.username,
-          avatar: data.userdata.avatar,
-          bet: data.userdata.bet,
-          room: data.room,
-          socketId: socket.id,
-        };
+        try {
+          // Verifica el ID del usuario
+          const userId = data.userdata.id;
+          if (!mongoose.Types.ObjectId.isValid(userId)) {
+            console.log("ID de usuario no es válido");
+            return;
+          }
 
-        // Agrega al jugador a la cola si no está ya en la cola
-        arr1vs1.push(challenger);
-        console.log("join queue", arr1vs1);
+          // Obtener datos completos de usuario, jugador y nivel
+          const user = await User.findById(userId).populate({
+            path: "player",
+            populate: {
+              path: "level",
+            },
+          });
 
-        // Realiza el emparejamiento de jugadores
-        matchPlayers();
+          if (!user) {
+            console.log("Usuario no encontrado con ID:", userId);
+            return;
+          }
+
+          const playerData = user.player;
+          const levelData = playerData.level;
+
+          console.log("Datos del Usuario:", user);
+          console.log("Datos del Jugador:", playerData);
+          console.log("Datos del Nivel:", levelData);
+
+          const challenger = {
+            id: socket.id,
+            username: user.username,
+            avatar: user.avatar,
+            bet: data.userdata.bet,
+            room: data.room,
+            socketId: socket.id,
+          };
+
+          arr1vs1.push(challenger);
+          console.log("join queue", arr1vs1);
+
+          matchPlayers();
+        } catch (error) {
+          console.error("Error al obtener los datos del usuario:", error);
+        }
       } else {
         console.log("Jugador ya está en la cola");
       }
 
-      // maching players
       matchPlayers();
     });
 

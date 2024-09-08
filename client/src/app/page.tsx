@@ -34,6 +34,9 @@ const FormSchema = z.object({
 export default function Home() {
   const user = useAppSelector((state: RootState) => state.user);
 
+  console.log("ID del usuario en el cliente:", user.id);
+
+
   // message state
   const [message, setMessage] = React.useState<any>(null);
   const [messageReceived, setMessageReceived] = React.useState("");
@@ -64,6 +67,8 @@ export default function Home() {
       "avatar": user.avatar,
       "bet": 10,
     }
+
+
 
     if (room) {
       socket.emit("join_queue", { room, userdata });
