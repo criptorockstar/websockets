@@ -1,9 +1,11 @@
 import bcrypt from "bcryptjs";
 import User from "../models/user.model.js";
 import Player from "../models/player.model.js";
+import Level from "../models/level.model.js";
 import { Router } from "express";
 import { body, validationResult } from "express-validator";
 import jwt from "jsonwebtoken";
+import authenticateToken from "../middlewares/auth.middleware.js"; // Importar el middleware
 
 const router = Router();
 
@@ -58,21 +60,20 @@ router.post(
       const salt = await bcrypt.genSalt(10);
       const hash = await bcrypt.hash(password, salt);
 
-      // Crear el usuario
+      // Crear el jugador relacionado primero
+      const player = new Player({
+        credits: 20,
+      });
+      await player.save();
+
+      // Crear el usuario con la referencia al jugador
       const user = new User({
         username,
         email,
         password: hash,
+        player: player._id, // Asignar la referencia al jugador
       });
       await user.save();
-
-      // Crear el jugador relacionado
-      const player = new Player({
-        userId: user._id,
-        credits: 20,
-      });
-
-      await player.save();
 
       // Eliminar la contraseña antes de enviar la respuesta
       const { password: hashedPassword, __v, ...data } = user.toJSON();
@@ -99,7 +100,14 @@ router.post(
     try {
       const { email, password } = req.body;
 
-      const user = await User.findOne({ email });
+      // Buscar el usuario por email
+      const user = await User.findOne({ email }).populate({
+        path: "player",
+        populate: {
+          path: "level",
+        },
+      });
+
       if (!user) {
         return res.status(400).json({
           errors: [
@@ -112,6 +120,7 @@ router.post(
         });
       }
 
+      // Comparar la contraseña
       if (!(await bcrypt.compare(password, user.password))) {
         return res.status(400).json({
           errors: [
@@ -124,8 +133,12 @@ router.post(
         });
       }
 
-      const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
+      // Crear el token JWT
+      const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+        expiresIn: "24h",
+      });
 
+      // Configurar la cookie
       res.cookie("jwt", token, {
         httpOnly: true,
         maxAge: 24 * 60 * 60 * 1000,
@@ -154,6 +167,27 @@ router.get("/verify", (req, res) => {
 
     res.status(200).json({ message: "Token is valid", userId: decoded.id });
   });
+});
+
+router.get("/user/details", authenticateToken, async (req, res) => {
+  try {
+    // Usar req.userId para buscar al usuario y hacer populate en 'player'
+    const user = await User.findById(req.userId).populate({
+      path: "player", // Cambio aquí de 'players' a 'player'
+      populate: {
+        path: "level", // Popula también el nivel del jugador
+      },
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: "* Usuario no encontrado" });
+    }
+
+    const { password, __v, ...userData } = user.toJSON();
+    res.status(200).json(userData);
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
 });
 
 export default router;
