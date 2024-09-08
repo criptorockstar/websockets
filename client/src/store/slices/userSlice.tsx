@@ -1,11 +1,13 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 export interface IUserState {
+  id?: string;
   username?: string;
   email?: string;
 }
 
 const initialState: IUserState = {
+  id: undefined,
   username: undefined,
   email: undefined,
 };

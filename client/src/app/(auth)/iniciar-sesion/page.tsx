@@ -82,9 +82,11 @@ export default function SignIn() {
         const result = await response.json();
 
         const payload = {
+          "id": result._id,
           "username": result.username,
           "email": result.email,
         }
+
         dispatch(setUserState(payload));
         router.push("/");
       }

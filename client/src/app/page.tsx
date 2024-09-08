@@ -41,24 +41,9 @@ export default function Home() {
   // room state
   const [room, setRoom] = React.useState("");
 
-  const sendMessage = () => {
-    if (message && room) {
-      socket.emit("send_challenger", { message, room });
-    }
-  };
 
   React.useEffect(() => {
-    // Emit the message whenever message or room changes
-    sendMessage();
-  }, [message, room]);
-
-  React.useEffect(() => {
-    socket.on("received_challenger", (data) => {
-      setMessageReceived(data.message)
-    });
-
     return () => {
-      socket.off("received_challenger");
     };
   }, []);
 
@@ -72,43 +57,67 @@ export default function Home() {
   function onSubmit(data: z.infer<typeof FormSchema>) {
     const room = data.mode;
     setRoom(room);
-    if (room) {
-      socket.emit("join_queue", room);
-      setMessage(user.username);
-      sendMessage()
+
+    const userdata = {
+      "id": user.id,
+      "username": user.username,
+      "email": user.email
     }
-    console.log(room);
+
+    if (room) {
+      socket.emit("join_queue", { room, userdata });
+    }
+    console.log(room, userdata);
+  }
+
+  const onCancel = async () => {
+    const userdata = {
+      "id": user.id,
+      "username": user.username,
+      "email": user.email
+    }
+
+    if (room) {
+      console.log("removing", userdata.id)
+      socket.emit("leave_queue");
+    }
+
+    // remove room from state
+    setRoom("");
   }
 
   return (
     <React.Fragment>
-      <div className="mb-6">
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="w-2/3 space-y-6">
-            <FormField
-              control={form.control}
-              name="mode"
-              render={({ field }) => (
-                <FormItem>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="1 vs 1" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="1 vs 1">1 vs 1</SelectItem>
-                      <SelectItem value="2 vs 2">2 vs 2</SelectItem>
-                      <SelectItem value="3 vs 3">3 vs 3</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <Button type="submit">Jugar</Button>
-          </form>
-        </Form>
+      <div className="flex items-center justify-center  h-screen">
+        <div className="w-[400px] mx-auto">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="w-2/3 space-y-6">
+              <FormField
+                control={form.control}
+                name="mode"
+                render={({ field }) => (
+                  <FormItem>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="1 vs 1" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="1 vs 1">1 vs 1</SelectItem>
+                        <SelectItem value="2 vs 2">2 vs 2</SelectItem>
+                        <SelectItem value="3 vs 3">3 vs 3</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button type="submit">Jugar</Button>
+              <Button onClick={onCancel}>Cancelar</Button>
+            </form>
+          </Form>
+        </div>
       </div>
 
       <div>
