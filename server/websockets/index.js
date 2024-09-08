@@ -1,5 +1,4 @@
 let arr1vs1 = [];
-let playingArray = [];
 let playerStatus = {};
 
 export default function setupSocket(io) {

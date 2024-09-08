@@ -11,6 +11,7 @@ import mainRoutes from "./routes/routes.js";
 import userRoutes from "./routes/user.routes.js";
 
 import Level from "./models/level.model.js";
+import Card from "./models/card.model.js";
 // Populate database if empty
 const levels = [
   {
@@ -51,6 +52,26 @@ async function seedLevels() {
   }
 }
 
+async function seedCards() {
+  const count = await Card.countDocuments();
+  if (count === 0) {
+    for (const [suit, suitStr] of Object.entries(suits)) {
+      for (const number of cardNumbers) {
+        const imageUrl = `http://localhost:3001/cards/${number}_${suitStr}.png`;
+        const card = new Card({
+          suit,
+          number,
+          image: imageUrl,
+        });
+        await card.save();
+      }
+    }
+    console.log("Seed de cartas completado");
+  } else {
+    console.log("La colección de cartas ya tiene datos");
+  }
+}
+
 const app = express();
 app.use(
   cors({
@@ -80,6 +101,7 @@ async function startServer() {
 
     // Ejecutar el seed de niveles si es necesario
     await seedLevels();
+    await seedCards();
 
     setupSocket(io);
 
